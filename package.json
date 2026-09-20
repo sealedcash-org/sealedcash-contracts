@@ -20,9 +20,9 @@
   "scripts": {
     "build": "hardhat compile",
     "build:production": "hardhat compile --build-profile production",
-    "test": "hardhat compile && node --test --test-reporter=spec test/*.ts",
-    "test:escrow": "hardhat compile && node --test --test-reporter=spec test/SealedCashEscrow.ts",
-    "test:pool": "hardhat compile && node --test --test-reporter=spec test/SealedCashPrivacyPool.ts",
+    "test": "hardhat compile && node --experimental-strip-types --test --test-reporter=spec test/*.ts",
+    "test:escrow": "hardhat compile && node --experimental-strip-types --test --test-reporter=spec test/SealedCashEscrow.ts",
+    "test:pool": "hardhat compile && node --experimental-strip-types --test --test-reporter=spec test/SealedCashPrivacyPool.ts",
     "preflight": "node scripts/preflight-sealedcash.mjs",
     "deploy": "node scripts/deploy-sealedcash.mjs",
     "clean": "hardhat clean"
