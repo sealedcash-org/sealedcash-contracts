@@ -1,0 +1,9 @@
+node_modules/
+artifacts/
+cache/
+coverage/
+deployments/*.json
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
