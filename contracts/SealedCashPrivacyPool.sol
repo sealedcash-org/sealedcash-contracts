@@ -190,7 +190,7 @@ contract SealedCashPrivacyPool is
         (uint64 index, bytes32 root) = _insert(commitment);
         emit Deposit(address(0), msg.value, commitment, index, encryptedOutput);
         emit EncryptedOutput(commitment, encryptedOutput);
-        emit OutputInserted(commitment, index, root, keccak256(encryptedOutput), encryptedOutput);
+        emit OutputInserted(commitment, index, root, ciphers[0], encryptedOutput);
     }
 
     function depositERC20(
@@ -215,7 +215,7 @@ contract SealedCashPrivacyPool is
         (uint64 index, bytes32 root) = _insert(commitment);
         emit Deposit(token, amount, commitment, index, encryptedOutput);
         emit EncryptedOutput(commitment, encryptedOutput);
-        emit OutputInserted(commitment, index, root, keccak256(encryptedOutput), encryptedOutput);
+        emit OutputInserted(commitment, index, root, ciphers[0], encryptedOutput);
     }
 
     function transact(

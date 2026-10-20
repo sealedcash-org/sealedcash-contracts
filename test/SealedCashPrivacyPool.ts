@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { network } from "hardhat";
-import { keccak256, numberToHex, stringToHex, zeroAddress, type Hex } from "viem";
+import { keccak256, numberToHex, parseEventLogs, stringToHex, zeroAddress, type Hex } from "viem";
 
 describe("SealedCashPrivacyPool", async function () {
   const { viem } = await network.create({ network: "hardhatMainnet", chainType: "l1" });
@@ -132,6 +132,24 @@ describe("SealedCashPrivacyPool", async function () {
     assert.equal(await f.pool.read.liabilities([f.token.address]), 90n);
     assert.equal(await f.token.read.balanceOf([f.recipient.account.address]), 900n);
     assert.equal(await f.token.read.balanceOf([f.relayer.account.address]), 10n);
+  });
+
+  it("emits the proof-bound ciphertext hash for deposit and transact outputs alike", async () => {
+    const f = await fixture();
+    const ciphertext = "0x0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f" as Hex;
+    const depositHash = await f.pool.write.depositNative([commitment(), ciphertext, "0x"], { account: f.user.account, value: 100n });
+    const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash });
+    const root = await f.pool.read.currentRoot();
+    const n = canonical(keccak256(stringToHex("ciphertext-hash-nullifier")));
+    const transactHash = await f.pool.write.transact([root, [n, zeroBytes32], 1, [commitment(), zeroBytes32], 1, zeroAddress, 0n, zeroAddress, [ciphertext, "0x"], proof]);
+    const transactReceipt = await publicClient.waitForTransactionReceipt({ hash: transactHash });
+    const outputHash = (logs: typeof depositReceipt.logs) => {
+      const [event] = parseEventLogs({ abi: f.pool.abi, eventName: "OutputInserted", logs });
+      return event.args.ciphertextHash;
+    };
+    const depositCiphertextHash = outputHash(depositReceipt.logs);
+    assert.equal(depositCiphertextHash, outputHash(transactReceipt.logs));
+    assert.notEqual(depositCiphertextHash, keccak256(ciphertext));
   });
 
   it("enforces pause and pauser authorization", async () => {
